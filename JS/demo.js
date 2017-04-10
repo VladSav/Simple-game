@@ -5,16 +5,17 @@ function preload () {
 	game.load.image ('ice', './Img/ice.png');
 	game.load.image ('earth', './Img/earth.png');
 	game.load.spritesheet ('hero', './Img/1716651.png', 32, 32, 96);
+	game.load.spritesheet ('EnemyAngel', './Img/Enemy1.png', 96, 48, 12);
 }
 
 function create () {
 	game.stage.setBackgroundColor(0x212429);
-
+	angel = game.add.sprite (game.world.centerX-232, 10, 'EnemyAngel');
+	angel.animations.add ('angel', [0,1,2]);
 	heroD = game.add.sprite (game.world.centerX-200, 100, 'hero');
 	heroL = game.add.sprite (game.world.centerX-200, 140, 'hero');
 	heroR = game.add.sprite (game.world.centerX-200, 180, 'hero');
 	heroU = game.add.sprite (game.world.centerX-200, 60, 'hero');
-
 	textD = game.add.text (game.world.centerX-60, 104, "Press S or ↓ to move down");
 	textD.font = 'Arial';
 	textD.fontSize = 20;
@@ -39,14 +40,12 @@ function create () {
 	textM.font = 'Arial';
   textM.fontSize = 20;
 	textM.fill = '#fff';
-
 	heroD.animations.add ('walkDown', [3,4,5]);
 	heroL.animations.add ('walkLeft', [14,15,16]);
 	heroR.animations.add ('walkRight', [25,26,27]);
 	heroU.animations.add ('walkUp', [36,37,38]);
 	hero = game.add.sprite (game.world.centerX-200, 220,'hero')
 	hero.animations.add ('stop', [15]);
-
 	createBullets ();
 }
 
@@ -56,6 +55,7 @@ function update () {
 	heroU.animations.play ('walkUp', 4, true);
 	heroD.animations.play ('walkDown', 4, true);
 	hero.animations.play ('stop');
+	angel.animations.play ('angel', 4, true);
 	fire ();
 }
 
