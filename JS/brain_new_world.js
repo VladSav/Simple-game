@@ -412,6 +412,9 @@ function bulletHitPlayer (Enemy, bullet) {
 		bgMusic2.stop ();
 		bgMusic3.stop ();
 		bgMusic4.stop ();
+		for (var i=0; i<10; i++)
+			hearts[i].visible = false;
+
 	  var explosionAnimation = explosions.getFirstExists(false);
 	  explosionAnimation.reset(remx, hero.y);
 	  explosionAnimation.play('PoofWhite', 25, false, true);
