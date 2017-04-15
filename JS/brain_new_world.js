@@ -1,51 +1,6 @@
-EnemyAngel = function (index, game, player, bullets) {
-		var x = game.world.randomX;
-		while (x >= 5740) x = game.world.randomX;
-		var y = game.world.randomY;
-    this.game = game;
-    this.health = 3;
-    this.player = player;
-    this.bullets = bullets;
-    this.fireRate = 1500;
-    this.nextFire = 0;
-    this.alive = true;
-    this.Angel = game.add.sprite(x, y, 'EnemyAngel');
-		this.Angel.animations.add ('Fly', [0, 1, 2]);
-		this.Angel.animations.play ('Fly', 4 ,true);
-		game.physics.enable(this.Angel, Phaser.Physics.ARCADE);
-		this.Angel.body.immovable = false;
-		this.Angel.body.collideWorldBounds = true;
-		this.Angel.body.bounce.setTo(1, 1);
-    this.Angel.anchor.set(0.5);
-    this.Angel.name = index.toString();
-};
-
-EnemyAngel.prototype.damage = function(damage) {
-    this.health -= damage;
-    if (this.health <= 0) {
-        this.alive = false;
-        this.Angel.kill();
-        return true;
-    }
-    return false;
-};
-
-EnemyAngel.prototype.update = function() {
-	if (this.game.physics.arcade.distanceBetween(this.Angel, this.player) < 600)  {
-    if (this.game.time.now > this.nextFire && this.bullets.countDead() > 0) {
-      this.nextFire = this.game.time.now + this.fireRate;
-      var bullet = this.bullets.getFirstDead();
-      bullet.reset(this.Angel.x, this.Angel.y);
-      bullet.rotation = this.game.physics.arcade.moveToObject(bullet, this.player, 500);
-			AngelSpell.volume = 0.2;
-			AngelSpell.play ();
-    }
-  }
-};
-
-EnemySkelet = function (index, game, player, bullets) {
+Enemy = function (index, game, player, bullets, spriteName, animationsName, animations_masive) {
 	var x = game.world.randomX;
-	while (x >= 5740) x = game.world.randomX;
+	while (x >= 5540) x = game.world.randomX;
 	var y = game.world.randomY;
   this.game = game;
   this.health = 3;
@@ -54,41 +9,58 @@ EnemySkelet = function (index, game, player, bullets) {
   this.fireRate = 1700;
   this.nextFire = 0;
   this.alive = true;
-  this.Skelet = game.add.sprite(x, y, 'EnemySkelet');
-	this.Skelet.animations.add ('Skel', [6, 7, 8]);
-	this.Skelet.animations.play ('Skel', 4 ,true);
-	game.physics.enable(this.Skelet, Phaser.Physics.ARCADE);
-	this.Skelet.body.immovable = false;
-	this.Skelet.body.collideWorldBounds = true;
-	this.Skelet.body.bounce.setTo(1, 1);
-  this.Skelet.anchor.set(0.5);
-  this.Skelet.name = index.toString();
+  this.Enemy = game.add.sprite(x, y, spriteName);
+	this.Enemy.animations.add (animationsName, animations_masive);
+	this.Enemy.animations.play (animationsName, 4 ,true);
+	game.physics.enable(this.Enemy, Phaser.Physics.ARCADE);
+	this.Enemy.body.immovable = false;
+	this.Enemy.body.collideWorldBounds = true;
+	this.Enemy.body.bounce.setTo(1, 1);
+  this.Enemy.anchor.set(0.5);
+  this.Enemy.name = index.toString();
+	this.Enemy.angle = game.rnd.angle();
+	game.physics.arcade.velocityFromRotation(this.Enemy.rotation, 100, this.Enemy.body.velocity);
+	this.Enemy.angle = 0;
 };
 
-EnemySkelet.prototype.damage = function(damage) {
+Enemy.prototype.damage = function(damage) {
     this.health -= damage;
+		this.Enemy.angle = game.rnd.angle();
+		game.physics.arcade.velocityFromRotation(this.Enemy.rotation, 100, this.Enemy.body.velocity);
+		this.Enemy.angle = 0;
+
     if (this.health <= 0) {
+			this.health = 3;
+			this.Enemy.angle = game.rnd.angle();
+			game.physics.arcade.velocityFromRotation(this.Enemy.rotation, 100, this.Enemy.body.velocity);
+			this.Enemy.angle = 0;
         this.alive = false;
-        this.Skelet.kill();
+        this.Enemy.kill();
         return true;
     }
     return false;
 };
 
-EnemySkelet.prototype.update = function() {
-	if (this.game.physics.arcade.distanceBetween(this.Skelet, this.player) < 500)  {
+Enemy.prototype.update = function() {
+	if (this.game.physics.arcade.distanceBetween(this.Enemy, this.player) < 500)  {
     if (this.game.time.now > this.nextFire && this.bullets.countDead() > 0) {
       this.nextFire = this.game.time.now + this.fireRate;
       var bullet = this.bullets.getFirstDead();
-      bullet.reset(this.Skelet.x, this.Skelet.y);
+      bullet.reset(this.Enemy.x, this.Enemy.y);
       bullet.rotation = this.game.physics.arcade.moveToObject(bullet, this.player, 400);
-			SkeletSpell.volume = 0.2;
-			SkeletSpell.play ();
+			EnemySpell.volume = 0.4;
+			EnemySpell.play ();
     }
   }
+	if (this.Enemy.body.x >= 5540){
+		this.Enemy.angle = Math.random() * (270 - 90) + 90;
+		game.physics.arcade.velocityFromRotation(this.Enemy.rotation, 100, this.Enemy.body.velocity);
+		this.Enemy.angle = 0;
+	}
+
 };
 
-var game = new Phaser.Game(1360, 650, Phaser.AUTO, 'game', {preload: preload, create: create, update: update, render: render });
+var game = new Phaser.Game( screen.width-20, screen.height-120, Phaser.AUTO, 'game', {preload: preload, create: create, update: update, render: render });
 
 function preload() {
 		game.load.tilemap ('tilemap', './Resources/world_map.json', null, Phaser.Tilemap.TILED_JSON);
@@ -99,12 +71,13 @@ function preload() {
 		game.load.image ('earth', './Img/earth.png');
 		game.load.image ('AngelMagic', './Img/Angel_magic.png');
 		game.load.image ('SkeletMagic', './Img/Skelet_magic.png');
+		game.load.image ('heart', './Img/heart.png');
 		game.load.spritesheet ('hero', './Img/1716651.png', 32, 32, 96);
 		game.load.spritesheet ('EnemyAngel', './Img/Enemy1.png', 96, 48, 12);
 		game.load.spritesheet ('EnemySkelet', './Img/EnemyS.png', 32, 32, 96);
 		game.load.spritesheet ('PoofWhite', './Img/Poof_white.png', 96, 48, 10);
 		game.load.audio ('bgMusic1', './Music/Celtic.mp3');
-		game.load.audio ('s_angel', './Music/spooky.wav');
+		game.load.audio ('s_enemy', './Music/spooky.wav');
 		game.load.audio ('s_fire', './Music/sound_fireball.wav');
 		game.load.audio ('s_ice', './Music/sound_weird.wav');
 		game.load.audio ('s_earth', './Music/sound_boom.wav');
@@ -119,10 +92,11 @@ var layer1, layer2, layer3, layer4, layer5, layer6, layer7, layer8;
 var hero, hero_collide, hp = 10, hpPlus = 10000, hpNext = 0, heroSpeed = 300;
 var upButton, downButton, leftButton, rightButton, fireButton, iceButton, earthButton, pauseButton, changeSoundButton, speedButton;
 var bulletType = 0, bulletsFire, bulletsIce, bulletsEarth, bullet, bulletSpeed = 500, fireRate = 1000, nextFire = 0;
-var nextSound = 0, soundFire, soundIce, soundEarth, sound_spell, AngelSpell, SkeletSpell, bgMusic1, bgMusic2, bgMusic3, bgMusic4;
+var nextSound = 0, soundFire, soundIce, soundEarth, sound_spell, bgMusic1, bgMusic2, bgMusic3, bgMusic4;
 var enemiesAngel, enemyBulletsAngel, enemiesTotalA = 0, enemiesAliveA = 0;
 var enemiesSkelet, enemyBulletsSkelet, enemiesTotalA = 0, enemiesAliveA = 0;
 var explosions;
+var hearts;
 
 function create() {
 	game.input.onDown.add(unpause, self);
@@ -177,12 +151,12 @@ function create() {
 	enemiesAngel = [];
 	var number_enemies_angel = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24 ,25];
 	for (var num_ia = 0; num_ia < number_enemies_angel.length; num_ia++) {
-		enemiesAngel.push(new EnemyAngel(/*6240 - num_i*100, 1110, */number_enemies_angel[num_ia], game, hero_collide, enemyBulletsAngel));
+		enemiesAngel.push(new Enemy(number_enemies_angel[num_ia], game, hero_collide, enemyBulletsAngel, 'EnemyAngel', 'Fly', [0, 1, 2]));
 	}
 	enemiesSkelet = [];
 	var number_enemies_skelet = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24 ,25];
 	for (var num_is = 0; num_is < number_enemies_skelet.length; num_is++) {
-		enemiesSkelet.push(new EnemySkelet(/*6240 - num_i*100, 1160, */number_enemies_skelet[num_is], game, hero_collide, enemyBulletsSkelet));
+		enemiesSkelet.push(new Enemy(number_enemies_skelet[num_is], game, hero_collide, enemyBulletsSkelet, 'EnemySkelet', 'Skel', [6, 7, 8]));
 	}
 	explosions = game.add.group();
 	for (var i = 0; i < 10; i++){
@@ -194,21 +168,25 @@ function create() {
 	soundFire = game.add.audio ('s_fire');
 	soundIce = game.add.audio ('s_ice');
 	soundEarth = game.add.audio ('s_earth');
-	AngelSpell = game.add.audio ('s_angel');
-	SkeletSpell = game.add.audio ('s_angel');
+	EnemySpell = game.add.audio ('s_enemy');
 	bgMusic1 = game.add.audio ('bgMusic1');
 	bgMusic2 = game.add.audio ('bgMusic2');
 	bgMusic3 = game.add.audio ('bgMusic3');
 	bgMusic4 = game.add.audio ('bgMusic4');
 	bgMusicEnd = game.add.audio ('bgMusicEnd');
 	hero = game.add.sprite (6340, 1070, 'hero');
-	game.physics.p2.enable(hero);
+	game.physics.p2.enable (hero);
 	hero.animations.add ('stop', [4]);
 	hero.animations.add ('walkDown', [3,4,5]);
 	hero.animations.add ('walkLeft', [14,15,16]);
 	hero.animations.add ('walkRight', [25,26,27]);
 	hero.animations.add ('walkUp', [36,37,38]);
 	hero.animations.play ('stop');
+	hearts = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+	for (var i=0; i<10; i++){
+		game.physics.p2.enable (hearts[i]);
+		hearts[i] = game.add.sprite (hero.body.x+i*16, hero.body.y-320, 'heart');
+	}
 	game.camera.follow (hero);
 	game.physics.p2.setBoundsToWorld(true, true, true, true, false);
 	keys ();
@@ -216,25 +194,26 @@ function create() {
 }
 
 function update() {
-	if (pauseButton.isDown) game.paused = true;
-	game.physics.arcade.overlap(enemyBulletsAngel, hero_collide, bulletHitPlayerAngel, null, this);
-	game.physics.arcade.overlap(enemyBulletsSkelet, hero_collide, bulletHitPlayerSkelet, null, this);
+	if (pauseButton.isDown)	game.paused = true;
+
+	game.physics.arcade.overlap(enemyBulletsAngel, hero_collide, bulletHitPlayer, null, this);
+	game.physics.arcade.overlap(enemyBulletsSkelet, hero_collide, bulletHitPlayer, null, this);
   enemiesAlive = 0;
   for (var i = 0; i < enemiesAngel.length; i++) {
     if (enemiesAngel[i].alive) {
-      game.physics.arcade.collide(hero_collide, enemiesAngel[i].Angel);
-      game.physics.arcade.overlap(bulletsFire, enemiesAngel[i].Angel, bulletHitEnemyAngel, null, this);
-      game.physics.arcade.overlap(bulletsIce, enemiesAngel[i].Angel, bulletHitEnemyAngel, null, this);
-      game.physics.arcade.overlap(bulletsEarth, enemiesAngel[i].Angel, bulletHitEnemyAngel, null, this);
+      game.physics.arcade.collide(hero_collide, enemiesAngel[i].Enemy);
+      game.physics.arcade.overlap(bulletsFire, enemiesAngel[i].Enemy, bulletHitEnemyAngel, null, this);
+      game.physics.arcade.overlap(bulletsIce, enemiesAngel[i].Enemy, bulletHitEnemyAngel, null, this);
+      game.physics.arcade.overlap(bulletsEarth, enemiesAngel[i].Enemy, bulletHitEnemyAngel, null, this);
       enemiesAngel[i].update();
     }
   }
   for (var i = 0; i < enemiesSkelet.length; i++) {
     if (enemiesSkelet[i].alive) {
-      game.physics.arcade.collide(hero_collide, enemiesSkelet[i].Skelet);
-      game.physics.arcade.overlap(bulletsFire, enemiesSkelet[i].Skelet, bulletHitEnemySkelet, null, this);
-      game.physics.arcade.overlap(bulletsIce, enemiesSkelet[i].Skelet, bulletHitEnemySkelet, null, this);
-      game.physics.arcade.overlap(bulletsEarth, enemiesSkelet[i].Skelet, bulletHitEnemySkelet, null, this);
+      game.physics.arcade.collide(hero_collide, enemiesSkelet[i].Enemy);
+      game.physics.arcade.overlap(bulletsFire, enemiesSkelet[i].Enemy, bulletHitEnemySkelet, null, this);
+      game.physics.arcade.overlap(bulletsIce, enemiesSkelet[i].Enemy, bulletHitEnemySkelet, null, this);
+      game.physics.arcade.overlap(bulletsEarth, enemiesSkelet[i].Enemy, bulletHitEnemySkelet, null, this);
       enemiesSkelet[i].update();
     }
   }
@@ -251,8 +230,8 @@ function update() {
 		hero.animations.play ('walkRight', 4, true);
 	} else if (cursors.up.isDown || upButton.isDown){
   	hero.body.moveUp(heroSpeed);
-		hero.animations.play ('walkUp', 4, true);
 		hero_collide.y = hero.y;
+		hero.animations.play ('walkUp', 4, true);
 	} else if (cursors.down.isDown || downButton.isDown){
   	hero.body.moveDown(heroSpeed);
 		hero_collide.y = hero.y;
@@ -288,17 +267,20 @@ function update() {
 	}
 	changeSound ();
 	playBgSound ();
-	if (hp > 0)
-		hpPlease ();
+	moveHp (hero.body.x, hero.body.y);
+}
+
+function moveHp (xx, yy) {
+
+	for (var i=0; i<hp; i++){
+			hearts[i].x = xx-48+i*16;
+			hearts[i].y = yy+60;
+	}
 }
 
 function unpause(event) {
 	game.paused = false;
 }
-
-// function theEnd (event){
-//
-// }
 
 function fire (){
 	if (game.time.now > nextFire && bulletsFire.countDead() > 0) {
@@ -416,29 +398,7 @@ function keys () {
 	pauseButton = game.input.keyboard.addKey (Phaser.Keyboard.ESC);
 }
 
-function bulletHitPlayerAngel (Angel, bullet) {
-	hp -= 1;
-  bullet.kill();
-	if (hp <= 0) {
-		hp = -10;
-		var remx = hero.x;
-		hero.kill();
-		hero_collide.kill ();
-		hero.x = 10000;
-		hero_collide.x = 10000;
-		nextSound = 5;
-		bgMusic1.stop ();
-		bgMusic2.stop ();
-		bgMusic3.stop ();
-		bgMusic4.stop ();
-		var explosionAnimation = explosions.getFirstExists(false);
-	  explosionAnimation.reset(remx, hero.y);
-	  explosionAnimation.play('PoofWhite', 25, false, true);
-		// theEnd ();
-  }
-}
-
-function bulletHitPlayerSkelet (Skelet, bullet) {
+function bulletHitPlayer (Enemy, bullet) {
 	hp -= 1;
   bullet.kill();
 	if (hp <= 0) {
@@ -455,46 +415,44 @@ function bulletHitPlayerSkelet (Skelet, bullet) {
 	  var explosionAnimation = explosions.getFirstExists(false);
 	  explosionAnimation.reset(remx, hero.y);
 	  explosionAnimation.play('PoofWhite', 25, false, true);
-		// theEnd ();
   }
 }
 
-function bulletHitEnemyAngel (Angel, bullet) {
+function bulletHitEnemyAngel (Enemy, bullet) {
 	var destroyed;
 	if (bullet.key === 'fire')
-  	destroyed = enemiesAngel[Angel.name].damage(1);
+  	destroyed = enemiesAngel[Enemy.name].damage(1);
 	if (bullet.key === 'ice')
-		destroyed = enemiesAngel[Angel.name].damage(2);
+		destroyed = enemiesAngel[Enemy.name].damage(2);
 	if (bullet.key === 'earth')
-		destroyed = enemiesAngel[Angel.name].damage(3);
+		destroyed = enemiesAngel[Enemy.name].damage(3);
 	bullet.kill();
   if (destroyed) {
     var explosionAnimation = explosions.getFirstExists(false);
-    explosionAnimation.reset(Angel.x, Angel.y);
+    explosionAnimation.reset(Enemy.x, Enemy.y);
     explosionAnimation.play('PoofWhite', 25, false, true);
   }
 }
 
-function bulletHitEnemySkelet (Skelet, bullet) {
+function bulletHitEnemySkelet (Enemy, bullet) {
 	var destroyed;
 	if (bullet.key === 'fire')
-  	destroyed = enemiesSkelet[Skelet.name].damage(3);
+  	destroyed = enemiesSkelet[Enemy.name].damage(3);
 	if (bullet.key === 'ice')
-		destroyed = enemiesSkelet[Skelet.name].damage(0);
+		destroyed = enemiesSkelet[Enemy.name].damage(0);
 	if (bullet.key === 'earth')
-		destroyed = enemiesSkelet[Skelet.name].damage(1);
+		destroyed = enemiesSkelet[Enemy.name].damage(1);
 	bullet.kill();
   if (destroyed) {
     var explosionAnimation = explosions.getFirstExists(false);
-    explosionAnimation.reset(Skelet.x, Skelet.y);
+    explosionAnimation.reset(Enemy.x, Enemy.y);
     explosionAnimation.play('PoofWhite', 25, false, true);
   }
 }
 
 function render() {
-	if (hp > 0){
-		game.debug.text ('HP: ' + hp, 1300, 16);
-	} else {
-		game.debug.text ("GAME OVER", 655, 160);
-	}
+	// if (hp > 0)
+	// 	game.debug.text ('HP: ' + hp, screen.width-100, 16);
+	if (hp <= 0)
+		game.debug.text ("GAME OVER", screen.width/2-50, screen.height/3);
 }
