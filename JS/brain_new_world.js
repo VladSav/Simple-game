@@ -60,7 +60,7 @@ Enemy.prototype.update = function() {
 
 };
 
-var game = new Phaser.Game( screen.width-20, screen.height-120, Phaser.AUTO, 'game', {preload: preload, create: create, update: update, render: render });
+var game = new Phaser.Game( screen.width-20, screen.height-120, Phaser.CANVAS, 'game', {preload: preload, create: create, update: update, render: render });
 
 function preload() {
 		game.load.tilemap ('tilemap', './Resources/world_map.json', null, Phaser.Tilemap.TILED_JSON);
@@ -414,7 +414,6 @@ function bulletHitPlayer (Enemy, bullet) {
 		bgMusic4.stop ();
 		for (var i=0; i<10; i++)
 			hearts[i].visible = false;
-
 	  var explosionAnimation = explosions.getFirstExists(false);
 	  explosionAnimation.reset(remx, hero.y);
 	  explosionAnimation.play('PoofWhite', 25, false, true);
