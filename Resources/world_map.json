@@ -111,7 +111,7 @@
         {
          "columns":32,
          "firstgid":1,
-         "image":"D:\/Game dev\/Pictures\/LPC_Terrain\/terrain.png",
+         "image":"./Img/terrain.png",
          "imageheight":1024,
          "imagewidth":1024,
          "margin":0,
